@@ -12,11 +12,11 @@ class HandController:
         self.command = "NONE"
         self.cap = cv2.VideoCapture(0)
         
-        # --- CONFIGURATION DES LATENCES ---
-        self.move_cooldown = 0.15    # 150ms pour gauche/droite (rapide)
-        self.rotate_cooldown = 0.6   # 600ms pour tourner (plus lent pour éviter le spam)
+        # --- CONFIGURATION DES LATENCES (Modifié) ---
+        self.move_cooldown = 0.15    # Reste rapide pour les déplacements
+        self.rotate_cooldown = 1.0   # 1.0 seconde pour la rotation (très safe)
         self.last_time = 0
-        # ----------------------------------
+        # --------------------------------------------
 
         self.mp_hands = mp.solutions.hands
         self.hands = self.mp_hands.Hands(
@@ -52,9 +52,9 @@ class HandController:
             x_tip = int(index_tip.x * w)
             y_tip = int(index_tip.y * h)
 
-            # --- LOGIQUE DE DÉTECTION AVEC LATENCES SÉPARÉES ---
+            # --- LOGIQUE DE DÉTECTION ---
             
-            # 1. On identifie la zone visée par le doigt
+            # 1. Identifier l'intention (Zone)
             intended_command = "NONE"
             if y_tip < h * 0.35:
                 intended_command = "ROTATE"
@@ -63,28 +63,28 @@ class HandController:
             elif x_tip > w * 0.55:
                 intended_command = "RIGHT"
 
-            # 2. On applique le cooldown approprié selon l'action
+            # 2. Appliquer le cooldown spécifique
             time_since_last = current_time - self.last_time
             
             if intended_command == "ROTATE":
-                # Vérifie si on a attendu assez longtemps pour tourner (0.6s)
+                # On attend 1 seconde avant d'accepter une nouvelle rotation
                 if time_since_last > self.rotate_cooldown:
                     self.command = "ROTATE"
                     self.last_time = current_time
             
             elif intended_command in ["LEFT", "RIGHT"]:
-                # Vérifie si on a attendu assez longtemps pour bouger (0.15s)
+                # On attend seulement 0.15s pour les mouvements
                 if time_since_last > self.move_cooldown:
                     self.command = intended_command
                     self.last_time = current_time
             
-            # Pour le visuel (cercle bleu)
             cv2.circle(frame, (x_tip, y_tip), 10, (255, 0, 0), cv2.FILLED)
 
-        print(f"Commande : {self.command}") # Debug utile
+        print(f"Commande : {self.command}")
         
-        # Affichage des zones pour t'aider à calibrer
-        cv2.line(frame, (0, int(h * 0.35)), (w, int(h * 0.35)), (0, 255, 0), 2) # Ligne Rotation
+        # Ligne verte pour visualiser la hauteur de rotation
+        cv2.line(frame, (0, int(h * 0.35)), (w, int(h * 0.35)), (0, 255, 0), 2)
+        
         cv2.imshow("Hand Control", frame)
         
         if cv2.waitKey(1) & 0xFF == ord('q'):
