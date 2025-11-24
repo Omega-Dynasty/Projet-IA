@@ -1,15 +1,18 @@
 import pygame
 import random
 
-# Initialize pygame
+# --- Initialisation Pygame ---
 pygame.init()
 
+# --- Constantes ---
 SCREEN_WIDTH = 300
 SCREEN_HEIGHT = 600
 BLOCK_SIZE = 30
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (100, 100, 100)
+
+# Couleurs des pièces (ajoute de nouvelles couleurs ici)
 COLORS = {
     'I': (255, 0, 0),
     'O': (0, 255, 0),
@@ -18,46 +21,64 @@ COLORS = {
     'Z': (255, 165, 0),
     'L': (0, 255, 255),
     'J': (255, 0, 255),
+    'U': (128, 0, 128),  # Exemple pièce supplémentaire
 }
 
+# Création de l'écran
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Tetris")
 
+# --- Définition des formes ---
 SHAPES = [
-    ('I', [[(1, 1, 1, 1)]]),
-    ('O', [[(1, 1), (1, 1)]]),
-    ('T', [[(0, 1, 0), (1, 1, 1)]]),
-    ('S', [[(1, 1, 0), (0, 1, 1)]]),
-    ('Z', [[(0, 1, 1), (1, 1, 0)]]),
-    ('L', [[(1, 0, 0), (1, 1, 1)]]),
-    ('J', [[(0, 0, 1), (1, 1, 1)]])
+    ('I', [(1, 1, 1, 1)]),
+    ('O', [(1, 1), (1, 1)]),
+    ('T', [(0, 1, 0), (1, 1, 1)]),
+    ('S', [(1, 1, 0), (0, 1, 1)]),
+    ('Z', [(0, 1, 1), (1, 1, 0)]),
+    ('L', [(1, 0, 0), (1, 1, 1)]),
+    ('J', [(0, 0, 1), (1, 1, 1)]),
+    ('U', [(1, 0, 1), (1, 1, 1)]),  # Nouvelle pièce avec couleur violette
 ]
 
-font = pygame.font.SysFont(None, 30)  # Pour le compteur
+# Font pour le score
+font = pygame.font.SysFont(None, 30)
 
+# --- Fonctions ---
 def rotate_shape(shape):
+    """Rotation d’une pièce."""
     return [list(row) for row in zip(*shape[::-1])]
 
 def draw_shape(shape, x, y):
+    """Dessine la pièce en cours."""
     shape_label, shape_matrix = shape
     color = COLORS[shape_label]
     for row_idx, row in enumerate(shape_matrix):
         for col_idx, val in enumerate(row):
             if val:
-                pygame.draw.rect(screen, color, (x + col_idx*BLOCK_SIZE, y + row_idx*BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE))
+                pygame.draw.rect(
+                    screen,
+                    color,
+                    (x + col_idx*BLOCK_SIZE, y + row_idx*BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
+                )
 
 def check_collision(grid, shape, x, y):
+    """Vérifie collision avec murs ou blocs déjà posés."""
     shape_label, shape_matrix = shape
     for row_idx, row in enumerate(shape_matrix):
         for col_idx, val in enumerate(row):
             if val:
-                if x + col_idx < 0 or x + col_idx >= SCREEN_WIDTH//BLOCK_SIZE or y + row_idx >= SCREEN_HEIGHT//BLOCK_SIZE:
+                if x + col_idx < 0 or x + col_idx >= SCREEN_WIDTH//BLOCK_SIZE:
                     return True
-                if y + row_idx >= len(grid) or grid[y + row_idx][x + col_idx]:
+                if y + row_idx >= SCREEN_HEIGHT//BLOCK_SIZE:
+                    return True
+                if y + row_idx >= len(grid):
+                    return True
+                if grid[y + row_idx][x + col_idx]:
                     return True
     return False
 
 def clear_lines(grid):
+    """Supprime les lignes complètes et renvoie la grille mise à jour et le nombre de lignes supprimées."""
     new_grid = [row for row in grid if any(col == 0 for col in row)]
     lines_cleared = len(grid) - len(new_grid)
     new_grid = [[0]*(SCREEN_WIDTH//BLOCK_SIZE) for _ in range(lines_cleared)] + new_grid
@@ -70,10 +91,11 @@ def rotate_current_shape(grid, shape, x, y):
     return shape
 
 def draw_grid_lines():
-    # Lignes verticales fines grises
+    """Affiche les lignes verticales fines pour les colonnes."""
     for x in range(0, SCREEN_WIDTH, BLOCK_SIZE):
         pygame.draw.line(screen, GRAY, (x, 0), (x, SCREEN_HEIGHT), 1)
 
+# --- Boucle principale ---
 def main(controller=None):
     clock = pygame.time.Clock()
     grid = [[0]*(SCREEN_WIDTH//BLOCK_SIZE) for _ in range(SCREEN_HEIGHT//BLOCK_SIZE)]
@@ -83,11 +105,11 @@ def main(controller=None):
     running = True
     fall_speed = 10
     fall_count = 0
-    score = 0  # Compteur de lignes
+    score = 0
 
     while running:
         screen.fill(BLACK)
-        draw_grid_lines()  # Affiche les colonnes
+        draw_grid_lines()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -101,7 +123,6 @@ def main(controller=None):
         if keys[pygame.K_UP]:
             current_shape = rotate_current_shape(grid, current_shape, current_x, current_y)
 
-        # Détection via caméra
         if controller:
             cmd = controller.command
             if cmd == "LEFT" and not check_collision(grid, current_shape, current_x-1, current_y):
@@ -117,13 +138,14 @@ def main(controller=None):
             if not check_collision(grid, current_shape, current_x, current_y+1):
                 current_y += 1
             else:
+                # Poser la pièce définitivement
                 for row_idx, row in enumerate(current_shape[1]):
                     for col_idx, val in enumerate(row):
                         if val:
-                            grid[current_y+row_idx][current_x+col_idx] = 1
+                            grid[current_y+row_idx][current_x+col_idx] = current_shape[0]  # Garde la couleur
                 grid, cleared = clear_lines(grid)
                 if cleared > 0:
-                    score += cleared  # Incrémenter le compteur
+                    score += cleared
                 current_shape = random.choice(SHAPES)
                 current_x = SCREEN_WIDTH//BLOCK_SIZE//2 - len(current_shape[1][0])//2
                 current_y = 0
@@ -131,15 +153,20 @@ def main(controller=None):
                     running = False
             fall_count = 0
 
-        # Dessiner les blocs déjà posés
+        # Dessiner les blocs posés avec leur couleur
         for y_idx, row in enumerate(grid):
             for x_idx, cell in enumerate(row):
                 if cell:
-                    pygame.draw.rect(screen, WHITE, (x_idx*BLOCK_SIZE, y_idx*BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE))
+                    pygame.draw.rect(
+                        screen,
+                        COLORS[cell],
+                        (x_idx*BLOCK_SIZE, y_idx*BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
+                    )
 
+        # Dessiner la pièce en cours
         draw_shape(current_shape, current_x*BLOCK_SIZE, current_y*BLOCK_SIZE)
 
-        # Affichage du score en haut à droite
+        # Afficher le score
         score_text = font.render(f"Lignes: {score}", True, WHITE)
         screen.blit(score_text, (SCREEN_WIDTH - score_text.get_width() - 10, 10))
 
@@ -149,3 +176,7 @@ def main(controller=None):
     pygame.quit()
     if controller:
         controller.release()
+
+# --- Lancer le jeu ---
+if __name__ == "__main__":
+    main()
