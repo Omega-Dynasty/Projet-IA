@@ -24,15 +24,14 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Tetris")
 
 SHAPES = [
-    ('I', [(1, 1, 1, 1)]),       # I-shape 1x4
-    ('O', [(1, 1), (1, 1)]),     # O-shape 2x2
-    ('T', [(0, 1, 0), (1, 1, 1)]), # T-shape 2x3
-    ('S', [(1, 1, 0), (0, 1, 1)]), # S-shape 2x3
-    ('Z', [(0, 1, 1), (1, 1, 0)]), # Z-shape 2x3
-    ('L', [(1, 0, 0), (1, 1, 1)]), # L-shape 2x3
-    ('J', [(0, 0, 1), (1, 1, 1)])  # J-shape 2x3
+    ('I', [[(1, 1, 1, 1)]]),
+    ('O', [[(1, 1), (1, 1)]]),
+    ('T', [[(0, 1, 0), (1, 1, 1)]]),
+    ('S', [[(1, 1, 0), (0, 1, 1)]]),
+    ('Z', [[(0, 1, 1), (1, 1, 0)]]),
+    ('L', [[(1, 0, 0), (1, 1, 1)]]),
+    ('J', [[(0, 0, 1), (1, 1, 1)]])
 ]
-
 
 font = pygame.font.SysFont(None, 30)  # Pour le compteur
 

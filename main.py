@@ -19,5 +19,3 @@ thread.start()
 
 # Lancer le jeu Tetris
 main(controller)
-
-#verif
