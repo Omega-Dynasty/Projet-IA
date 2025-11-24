@@ -9,6 +9,7 @@ SCREEN_HEIGHT = 600
 BLOCK_SIZE = 30
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+GRAY = (100, 100, 100)
 COLORS = {
     'I': (255, 0, 0),
     'O': (0, 255, 0),
@@ -31,6 +32,8 @@ SHAPES = [
     ('L', [[(1, 0, 0), (1, 1, 1)]]),
     ('J', [[(0, 0, 1), (1, 1, 1)]])
 ]
+
+font = pygame.font.SysFont(None, 30)  # Pour le compteur
 
 def rotate_shape(shape):
     return [list(row) for row in zip(*shape[::-1])]
@@ -66,6 +69,11 @@ def rotate_current_shape(grid, shape, x, y):
         return (shape[0], rotated)
     return shape
 
+def draw_grid_lines():
+    # Lignes verticales fines grises
+    for x in range(0, SCREEN_WIDTH, BLOCK_SIZE):
+        pygame.draw.line(screen, GRAY, (x, 0), (x, SCREEN_HEIGHT), 1)
+
 def main(controller=None):
     clock = pygame.time.Clock()
     grid = [[0]*(SCREEN_WIDTH//BLOCK_SIZE) for _ in range(SCREEN_HEIGHT//BLOCK_SIZE)]
@@ -75,9 +83,12 @@ def main(controller=None):
     running = True
     fall_speed = 10
     fall_count = 0
+    score = 0  # Compteur de lignes
 
     while running:
         screen.fill(BLACK)
+        draw_grid_lines()  # Affiche les colonnes
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -111,6 +122,8 @@ def main(controller=None):
                         if val:
                             grid[current_y+row_idx][current_x+col_idx] = 1
                 grid, cleared = clear_lines(grid)
+                if cleared > 0:
+                    score += cleared  # Incrémenter le compteur
                 current_shape = random.choice(SHAPES)
                 current_x = SCREEN_WIDTH//BLOCK_SIZE//2 - len(current_shape[1][0])//2
                 current_y = 0
@@ -118,11 +131,17 @@ def main(controller=None):
                     running = False
             fall_count = 0
 
+        # Dessiner les blocs déjà posés
         for y_idx, row in enumerate(grid):
             for x_idx, cell in enumerate(row):
                 if cell:
                     pygame.draw.rect(screen, WHITE, (x_idx*BLOCK_SIZE, y_idx*BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE))
+
         draw_shape(current_shape, current_x*BLOCK_SIZE, current_y*BLOCK_SIZE)
+
+        # Affichage du score en haut à droite
+        score_text = font.render(f"Lignes: {score}", True, WHITE)
+        screen.blit(score_text, (SCREEN_WIDTH - score_text.get_width() - 10, 10))
 
         pygame.display.update()
         clock.tick(30)

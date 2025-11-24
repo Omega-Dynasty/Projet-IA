@@ -13,8 +13,8 @@ class HandController:
         self.cap = cv2.VideoCapture(0)
         
         # --- CONFIGURATION DES LATENCES (Modifié) ---
-        self.move_cooldown = 0.15    # Reste rapide pour les déplacements
-        self.rotate_cooldown = 1.0   # 1.0 seconde pour la rotation (très safe)
+        self.move_cooldown = 0.5    # Reste rapide pour les déplacements
+        self.rotate_cooldown = 0.8   # 1.0 seconde pour la rotation (très safe)
         self.last_time = 0
         # --------------------------------------------
 
@@ -84,6 +84,13 @@ class HandController:
         
         # Ligne verte pour visualiser la hauteur de rotation
         cv2.line(frame, (0, int(h * 0.35)), (w, int(h * 0.35)), (0, 255, 0), 2)
+        
+        # Ligne rouge pour visualiser la limite gauche (x < 0.45*w)
+        cv2.line(frame, (int(w * 0.45), 0), (int(w * 0.45), h), (0, 0, 255), 2)
+
+        # Ligne bleue pour visualiser la limite droite (x > 0.55*w)
+        cv2.line(frame, (int(w * 0.55), 0), (int(w * 0.55), h), (255, 0, 0), 2)
+
         
         cv2.imshow("Hand Control", frame)
         
