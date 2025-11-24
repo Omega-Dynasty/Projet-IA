@@ -1,11 +1,21 @@
+from threading import Thread
 from vision_module import HandController
-from Tetris import main as tetris_main
+controller = HandController()
 
-# Crée le contrôleur main
-controller = HandController(cooldown=0)  # cooldown 0 pour test
+from Tetris import main
 
-# Lance le jeu Tetris avec le controller
-tetris_main(controller)
+controller = HandController()
 
-# Libération caméra à la fin
-controller.release()
+# Lancer la lecture caméra dans un thread séparé
+def update_controller():
+    while True:
+        cmd = controller.read_frame()
+        if cmd == "QUIT":
+            break
+
+thread = Thread(target=update_controller)
+thread.daemon = True
+thread.start()
+
+# Lancer le jeu Tetris
+main(controller)
