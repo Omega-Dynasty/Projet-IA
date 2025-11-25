@@ -2,7 +2,7 @@ from threading import Thread
 from vision_module import HandController
 controller = HandController()
 
-from Tetris import main
+from Tetris import main #Mettre Tetris pour toutes les pièces et Tetris_bis pour seulement 1*1 et 1*2 ( pour présentation)
 
 controller = HandController()
 

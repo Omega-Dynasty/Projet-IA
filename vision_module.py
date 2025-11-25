@@ -13,8 +13,8 @@ class HandController:
         self.cap = cv2.VideoCapture(0)
         
         # --- CONFIGURATION DES LATENCES (Modifié) ---
-        self.move_cooldown = 0.5    # Reste rapide pour les déplacements
-        self.rotate_cooldown = 1.0   # 1.0 seconde pour la rotation (très safe)
+        self.move_cooldown = 0.4
+        self.rotate_cooldown = 0.8
         self.last_time = 0
         # --------------------------------------------
 
