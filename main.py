@@ -17,5 +17,5 @@ thread = Thread(target=update_controller)
 thread.daemon = True
 thread.start()
 
-# Lancer le jeu Tetris
+
 main(controller)
