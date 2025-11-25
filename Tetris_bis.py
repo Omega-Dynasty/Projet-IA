@@ -184,4 +184,3 @@ def main(controller=None):
 # --- Lancer le jeu ---
 if __name__ == "__main__":
     main()
-#
